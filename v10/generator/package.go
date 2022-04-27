@@ -4,9 +4,7 @@ package generator
 import (
 	"fmt"
 	gofmt "go/format"
-	"hash/fnv"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 	"sort"
 )
@@ -25,14 +23,11 @@ func NewPackage(name, header string) *Package {
 func (p *Package) WriteFiles(targetDir string) error {
 	for name, body := range p.files {
 		targetFile := filepath.Join(targetDir, name)
-		if len(name) > 100 {
-			h := fnv.New32a()
-			_, _ = h.Write([]byte(name))
-			targetFile = filepath.Join(targetDir, fmt.Sprintf("%d.go", h.Sum32()))
+		// 255 - 3 for .go suffix
+		if len(name) > 252 {
+			targetFile = filepath.Join(targetDir, name[0:252]+".go")
 		}
-
-		log.Println("target file: ", targetFile)
-
+		
 		fileContent, err := gofmt.Source([]byte(fmt.Sprintf("%v\npackage %v\n%v", p.header, p.name, body)))
 		if err != nil {
 			return fmt.Errorf("Error writing file %v - %v", targetFile, err)
