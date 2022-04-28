@@ -25,7 +25,7 @@ type {{ .Name }} struct {
 {{ range $i, $t := .ItemTypes -}}
 	{{ .Name }} {{ .GoType }}
 {{ end -}}
-	UnionType {{ $.UnionEnumType }}
+	UnionTypeEnum {{ $.UnionEnumType }}
 }
 
 func {{ .SerializerMethod }}(r {{ .GoType }}, w io.Writer) error {
@@ -35,11 +35,11 @@ func {{ .SerializerMethod }}(r {{ .GoType }}, w io.Writer) error {
 		return err
 	}
         {{ end }}
-	err := vm.WriteLong(int64(r.UnionType), w)
+	err := vm.WriteLong(int64(r.UnionTypeEnum), w)
 	if err != nil {
 		return err
 	}
-	switch r.UnionType{
+	switch r.UnionTypeEnum{
 	{{ range $i, $t := .ItemTypes -}}
 	  {{ if ne $i $.NullIndex -}}
 	  case {{ $.ItemName $t }}:
@@ -115,7 +115,7 @@ func (r {{ .GoType }}) SetLong(v int64) {
 {{ else }}
 func (r *{{ .GoType }}) SetLong(v int64) { 
 {{ end }}
-	r.UnionType = ({{ .UnionEnumType }})(v)
+	r.UnionTypeEnum = ({{ .UnionEnumType }})(v)
 }
 {{ if ne .NullIndex -1 }}
 func (r {{ .GoType }}) Get(i int) types.Field {
@@ -150,7 +150,7 @@ func (r {{ .GoType }}) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	{{ end }}
-	switch r.UnionType{
+	switch r.UnionTypeEnum{
 	{{ range $i, $t := .ItemTypes -}}
 	{{ if ne $i $.NullIndex -}}
 	case {{ $.ItemName $t }}:
@@ -177,7 +177,7 @@ func (r *{{ .GoType }}) UnmarshalJSON(data []byte) (error) {
 	{{ range $i, $t := .ItemTypes -}}
 	{{ if ne $i $.NullIndex -}}
 	if value,  ok := fields["{{ .UnionKey }}"]; ok {
-		r.UnionType = {{ $i }}
+		r.UnionTypeEnum = {{ $i }}
 		return json.Unmarshal([]byte(value), &r.{{ .Name }})
 	}
         {{ end -}}
