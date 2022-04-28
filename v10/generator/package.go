@@ -23,6 +23,11 @@ func NewPackage(name, header string) *Package {
 func (p *Package) WriteFiles(targetDir string) error {
 	for name, body := range p.files {
 		targetFile := filepath.Join(targetDir, name)
+		// 255 - 3 for .go suffix
+		if len(name) > 252 {
+			targetFile = filepath.Join(targetDir, name[0:252]+".go")
+		}
+
 		fileContent, err := gofmt.Source([]byte(fmt.Sprintf("%v\npackage %v\n%v", p.header, p.name, body)))
 		if err != nil {
 			return fmt.Errorf("Error writing file %v - %v", targetFile, err)
